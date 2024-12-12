@@ -170,3 +170,12 @@ Each folder is structured as follows:
 
 
 
+## Credits
+AMRFlow was originally writen by Mustafa Helal
+
+We thank the following people for their extensive assistance in the development of AMRFlow:
+
+Maximilian Driller, Silver A. Wolf, Torsten Houwaart, Lakshmipriya Thrukonda, Vladimir Bajić
+
+
+This pipeline uses code and infrastructure developed and maintained by the nf-core community, reused here under the MIT license.
