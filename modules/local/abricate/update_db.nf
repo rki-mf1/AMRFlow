@@ -11,6 +11,6 @@ process ABRICATE_UPDATE {
     script:
     """
         mkdir -p abricate/${params.abricate_update_db}
-        abricate-get_db --db ${params.abricate_update_db} --dbdir abricate
+        abricate-get_db --db ${params.abricate_update_db} --force --dbdir abricate
     """
 }

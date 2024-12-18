@@ -4,7 +4,7 @@ def min_ID_amrfinder = (params.min_ID/ 100).toFloat()
 process AMRFINDER_RUN{
     tag "AMRfinderPlus"
     publishDir "${params.output_dir}/01_AMR_scan/amrfinder/", mode: 'copy'
-    conda "bioconda::ncbi-amrfinderplus=3.11.18"
+    conda "bioconda::ncbi-amrfinderplus=3.12.8"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ncbi-amrfinderplus:3.12.8--h283d18e_0':
         'biocontainers/ncbi-amrfinderplus:3.12.8--h283d18e_0' }"

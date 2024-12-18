@@ -19,5 +19,6 @@ process FARGENE_RUN {
             -i $assembly \\
             --hmm-model ${params.hmm_model} \\
             -o ${assembly.baseName}
+            --force
     """
 }  

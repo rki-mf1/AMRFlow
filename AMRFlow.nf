@@ -106,6 +106,7 @@ log.info """\
             = = = = = = = = = = = = = = = =     = = = = = = = = = = = = = = =    = = = = = = = = = = = = = = = =
             Input files:            $params.assembly_dir
             Output path:            $params.output_dir
+            DB Path:                $params.db_dir
             Tools:                  
                     ABRicate:       $params.run_abricate
                     AMRFinder:      $params.run_amrfinder
@@ -380,19 +381,19 @@ def helpMSG() {
                                    
     ${c_green}--run_abricate${c_reset}                 If set, Abricate will run with default parameters (Min Identity 90, Min Coverage 90)
     ${c_green}--run_amrfinder${c_reset}                If set, AMRfinder will run with default parameters (Min Identity 90, Min Coverage 90)
-    ${c_green}--run_amrfinder${c_reset}                If set, DeepARG will run with default parameters                              
+    ${c_green}--run_deeparg${c_reset}                  If set, DeepARG will run with default parameters                              
     ${c_green}--run_fargene${c_reset}                  If set, fARGene will run with default parameters (--hmm_model class_A)
                                     ${c_dim}supported are all models fARGene support. Please look at their git ${c_reset}
     
     ${c_yellow}Tool Prams:${c_reset}       |Some tools have specific parameters that can be set.
 
-    ${c_green}--min_ID${c_reset}               Minimum identity can be set [0-100]               
-    ${c_green}--min_COV${c_reset}              Minimum coverage can be set [0-100]
-    ${c_green}--organism_amrfinder${c_reset}            Organism specific mutations identification 
+    ${c_green}--min_ID${c_reset}                       Minimum identity can be set [0-100]               
+    ${c_green}--min_COV${c_reset}                      Minimum coverage can be set [0-100]
+    ${c_green}--organism_amrfinder${c_reset}           Organism specific mutations identification 
                                     ${c_dim}(see list of amrfinderplus in git)${c_reset}
-    ${c_green}--hmm_model_fargene${c_reset}             Setup model for antibiotic class specific amr detection
+    ${c_green}--hmm_model_fargene${c_reset}            Setup model for antibiotic class specific amr detection
                                     ${c_dim}(see models and descriptions at fARGene git)${c_reset}
-    ${c_green}--no_summary${c_reset}                       Set to summarize all hAMRonization reports into one.
+    ${c_green}--no_summary${c_reset}                   Set to summarize all hAMRonization reports into one.
 
    
     Thank you for using AMRFlow.
