@@ -41,10 +41,23 @@ The **AMRFlow** pipeline is a specialized Nextflow-based, multi-tool workflow de
 
 ## Installation
 
-To use **AMRFlow**, clone the repository and install the necessary dependencies.
+To use **AMRFlow**, we recommend installing it via `nextflow` directly:
 
 ```bash
-https://bitbucket.rki.local/users/helalm/repos/amrflow
+# install the pipeline
+nextflow pull rki-mf1/amrflow
+# check latest version
+nextflow info rki-mf1/amrflow
+# show help for a specific release version
+nextflow run rki-mf1/amrflow -r 0.0.1
+
+```
+
+
+clone the repository and install the necessary dependencies.
+
+```bash
+https://github.com/rki-mf1/AMRFlow.git
 cd AMRFlow
 ```
 
