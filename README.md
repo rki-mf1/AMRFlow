@@ -41,6 +41,11 @@ The **AMRFlow** pipeline is a specialized Nextflow-based, multi-tool workflow de
 
 ## Installation
 
+### Dependencies 
+Install `Nextflow` to run the pipeline. Depending on which environment management engine will be specified, `conda`, `mamba` or `singularity` needs to be set up.
+
+### Get the pipeline code
+
 To use **AMRFlow**, we recommend installing it via `nextflow` directly:
 
 ```bash
@@ -49,28 +54,23 @@ nextflow pull rki-mf1/amrflow
 # check latest version
 nextflow info rki-mf1/amrflow
 # show help for a specific release version
-nextflow run rki-mf1/amrflow -r 0.0.1
-
+nextflow run rki-mf1/amrflow -r 0.0.1 --help
 ```
 
-
-clone the repository and install the necessary dependencies.
+**Not recommended** but for developers or if you need to adjust the code: clone the repository and install the necessary dependencies.
 
 ```bash
-https://github.com/rki-mf1/AMRFlow.git
+git clone https://github.com/rki-mf1/AMRFlow.git
 cd AMRFlow
 ```
-
-### Dependencies 
-Install `Nextflow` to run the Pipeline. Depending on which environment management engine will be specified, `conda`, `mamba` or `singularity` needs to be set up.
-
 
 ### Setup Tools and Databases
 
 This step is mandatory for setting up tools and their individual databases. For initial setup and updates, use the following command:
 
 ```bash
-nextflow run AMRFlow.nf --update \
+# double-check to use the latest stable release version of the pipeline
+nextflow run rki-mf1/amrflow -r 0.0.1 --update \
     --run_amrfinder \
     --run_deeparg \
     --run_abricate \
@@ -85,9 +85,9 @@ To use the **AMRFlow** pipeline, you need to provide specific parameters to cust
 
 ### General Usage Examples
 ```bash
-nextflow run AMRFlow.nf --assembly_dir ./fastas --output_dir ./resultsA  --run_amrfinder  --db_dir ./databases -profile conda
-nextflow run AMRFlow.nf --assembly_dir ./fastas --output_dir ./resultsB  --run_abricate --abricate_db resfinder --run_amrfinder --db_dir ./databases -profile mamba
-nextflow run AMRFlow.nf --assembly_dir ./fastas --output_dir ./resultsC  --run_abricate --abricate_db ncbi --min_COV 90 --min_ID 80 --threads 32 -profile singularity
+nextflow run rki-mf1/amrflow -r 0.0.1 --assembly_dir ./fastas --output_dir ./resultsA  --run_amrfinder  --db_dir ./databases -profile conda
+nextflow run rki-mf1/amrflow -r 0.0.1 --assembly_dir ./fastas --output_dir ./resultsB  --run_abricate --abricate_db resfinder --run_amrfinder --db_dir ./databases -profile mamba
+nextflow run rki-mf1/amrflow -r 0.0.1 --assembly_dir ./fastas --output_dir ./resultsC  --run_abricate --abricate_db ncbi --min_COV 90 --min_ID 80 --threads 32 -profile singularity
 ```
 
 ### Supported Engines with Nextflow
@@ -140,11 +140,11 @@ Use the `--update` feature of **AMRFlow** to download the required databases int
 
 For AMRFinderPlus, ABRicate and DeepARG:
 ```sh
-nextflow run amrflow --update --run_amrfinder --db_dir /full/path/to/dbs
+nextflow run rki-mf1/amrflow -r 0.0.1 --update --run_amrfinder --db_dir /full/path/to/dbs
 
-nextflow run amrflow --update --run_abricate --abricate_update_db ncbi --db_dir /full/path/to/dbs
+nextflow run rki-mf1/amrflow -r 0.0.1 --update --run_abricate --abricate_update_db ncbi --db_dir /full/path/to/dbs
 
-nextflow run amrflow --update --run_deeparg --db_dir /full/path/to/dbs
+nextflow run rki-mf1/amrflow -r 0.0.1 --update --run_deeparg --db_dir /full/path/to/dbs
 ```
 
 The `--update` feature will generate a single directory, named after the assigned tool, within the defined path, that contains the database. The defined path should not include the tool name, but only the generic path to a directory that will contain all databases.
