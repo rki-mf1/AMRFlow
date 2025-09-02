@@ -32,7 +32,6 @@ The **AMRFlow** pipeline is a specialized Nextflow-based, multi-tool workflow de
 ## Workflow Capabilities
 - **Modular Design:** Each component, from database updates to result summarization, is encapsulated in modules for easy maintenance and scalability.
 - **Parameter Customization:** Allows for extensive customization of parameters such as database choice, analysis tool, identity thresholds, and coverage (accurate description of supported paremeters will be announced soon).
-- **Pathogen-Specific Pipeline Configuration:** In the near future, AMRFlow will be capable of conducting pathogen-specific analyses by allowing users to provide custom configuration files.
 
 <p align="center">
   <img src="assets/amrflow_workflow.PNG" alt="Flowchart AMRFlow" title="AMRFlow Pipeline Diagram" width="60%" />
