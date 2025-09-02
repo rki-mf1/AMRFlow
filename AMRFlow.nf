@@ -8,48 +8,6 @@ nextflow.enable.dsl = 2
 */
 
 
-// global prameter
-params.assembly_dir=""
-params.threads=32                               //default 32
-params.output_dir = "./results"                 //default ./results
-params.no_summary = false                       //default false
-params.db_dir = ""
-params.help = false
-params.plots = false                            //default false
-params.IGS = false                              //default false
-
-// update config    
-params.update = false                          
-params.abricate_update_db = "ncbi"              //default ncbi
-
-// tools 
-params.run_abricate    = false
-params.run_amrfinder   = false
-params.run_deeparg     = false
-params.run_fargene     = false
-
-params.min_ID = 90                   //default 90%
-params.min_COV = 90                  //default 90%
-
-
-// ----------------abricate--------------------
-
-params.abricate_db = "ncbi"                     //default
-
-// ----------------amrfinder-------------------
-
-params.organism_amrfinder = ""  //default none
-
-
-
-// -----------------deeparg--------------------
-
-
-
-// -----------------fARGene--------------------
-
-params.hmm_model = "class_a"
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,9 +16,10 @@ params.hmm_model = "class_a"
 */
 
 
-Set valid_params = ['assembly_dir', 'threads', 'output_dir', 'no_summary', 'db_dir', 'update', 
+Set valid_params = ['input', 'threads', 'output_dir', 'no_summary', 'db_dir', 'update', 
                     'abricate_update_db', 'run_abricate', 'run_amrfinder', 'run_deeparg','run_fargene',
-                    'abricate_db', 'min_COV', 'min_ID','organism_amrfinder', 'hmm_model','plots','IGS', 'help']
+                    'run_staramr', 'abricate_db', 'min_COV', 'min_ID','organism_amrfinder', 'hmm_model',
+                    'plots','IGS', 'help']
 
 
 
@@ -104,7 +63,7 @@ log.info """\
 
             A M R F l o w : Genomic Antimicrobial Resistance Detection through customizable, multi-tool analyses
             = = = = = = = = = = = = = = = =     = = = = = = = = = = = = = = =    = = = = = = = = = = = = = = = =
-            Input files:            $params.assembly_dir
+            Input files:            $params.input
             Output path:            $params.output_dir
             DB Path:                $params.db_dir
             Tools:                  
@@ -155,24 +114,28 @@ moveReport('run_log.txt', params.output_dir)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-
+include { INPUT_CHECK                            } from './subworkflows/input_check'
 include { ABRICATE_RUN                           } from './modules/local/abricate/main'
+include { ABRICATE_DOWNLOAD_DB                   } from './modules/local/abricate/wget_db_files'
 include { ABRICATE_UPDATE                        } from './modules/local/abricate/update_db'
-include { AMRFINDER_RUN                          } from './modules/local/amrfinderplus/main'
+include { AMRFINDERPLUS_RUN                      } from './modules/local/amrfinderplus/main'
 include { AMRFINDER_UPDATE                       } from './modules/local/amrfinderplus/update_db'
 include { DEEPARG_RUN                            } from './modules/local/deeparg/main'
 include { DEEPARG_UPDATE                         } from './modules/local/deeparg/update_db'
 include { FARGENE_RUN                            } from './modules/local/fargene/main'
+include { STARAMR_SEARCH                         } from './modules/local/staramr/main'
 include { HAMRONIZATION_ABRICATE_RUN             } from './modules/local/hamronization/abricate/main'
 include { HAMRONIZATION_AMRFINDER_RUN            } from './modules/local/hamronization/amrfinder/main'
 include { HAMRONIZATION_DEEPARG_RUN              } from './modules/local/hamronization/deeparg/main'
 include { HAMRONIZATION_FARGENE_RUN              } from './modules/local/hamronization/fargene/main'
+include { HAMRONIZATION_STARAMR_SEARCH           } from './modules/local/hamronization/staramr/main'
 include { HAMRONIZATION_SUMMARIZE                } from './modules/local/hamronization/summarize/main'
 include { HAMRONIZATION_SUMMARIZE_IGS            } from './modules/local/hamronization/summarize/main_IGS'
 include { HAMRONIZATION_SUMMARIZE_ABRICATE       } from './modules/local/hamronization/abricate/summary_abricate'
 include { HAMRONIZATION_SUMMARIZE_AMRFINDER      } from './modules/local/hamronization/amrfinder/summary_amrfinder'
 include { HAMRONIZATION_SUMMARIZE_DEEPARG        } from './modules/local/hamronization/deeparg/summary_deeparg'
 include { HAMRONIZATION_SUMMARIZE_FARGENE        } from './modules/local/hamronization/fargene/summary_fargene'
+include { HAMRONIZATION_SUMMARIZE_STARAMR        } from './modules/local/hamronization/staramr/summary_staramr'
 include { PRESENCE_ABSENCE as PA_1               } from './modules/local/summary/presence_absence'
 include { PRESENCE_ABSENCE as PA_2               } from './modules/local/summary/presence_absence'
 include { PRESENCE_ABSENCE as PA_3               } from './modules/local/summary/presence_absence'
@@ -195,7 +158,11 @@ workflow{
 
     if(params.update){
         if (params.run_abricate){
-            ABRICATE_UPDATE()
+            ABRICATE_DOWNLOAD_DB()
+            ABRICATE_UPDATE(
+                ABRICATE_DOWNLOAD_DB.out.tsv,
+                ABRICATE_DOWNLOAD_DB.out.ffn
+            )
         }
         if (params.run_amrfinder){
             AMRFINDER_UPDATE()
@@ -206,19 +173,32 @@ workflow{
     }
 
     else{
+
+        INPUT_CHECK (
+            file(params.input)
+        )
+        //ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+        input_ch = INPUT_CHECK.out.assembly
         
-        if (!file(params.assembly_dir).exists()) {
-            exit(1), "Provided assembly path does not exist or ist empty: ${params.assembly_dir}"
-        }
-        
-        assemblies_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
+        //assemblies_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
         all_reports = Channel.empty()
         
 
         if(params.run_abricate){
-            assemblies_abricate_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
-            run_output_abricate = ABRICATE_RUN(assemblies_abricate_ch)
-            hamronization_reports_abricate = HAMRONIZATION_ABRICATE_RUN(run_output_abricate)
+            //assemblies_abricate_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
+            
+            ABRICATE_RUN(
+                input_ch,
+                "${params.db_dir}/abricate/"
+            )
+            
+            hamronization_reports_abricate = HAMRONIZATION_ABRICATE_RUN(
+                ABRICATE_RUN.out.report,
+                "abricate",
+                "1.0.1",
+                "2021-05-01"                
+            )
+            
             all_reports = all_reports.concat(hamronization_reports_abricate)
             
             if(params.plots){
@@ -229,11 +209,22 @@ workflow{
         }
 
         if(params.run_amrfinder){
-            assemblies_amrfinder_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
-            run_output_amrfinder = AMRFINDER_RUN(assemblies_amrfinder_ch)
-            hamronization_reports_amrfinder = HAMRONIZATION_AMRFINDER_RUN(run_output_amrfinder)
+            //assemblies_amrfinder_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
+
+            AMRFINDERPLUS_RUN(
+                input_ch, 
+                "${params.db_dir}/amrfinder/latest/"
+            )
+            
+            hamronization_reports_amrfinder = HAMRONIZATION_AMRFINDER_RUN(
+                AMRFINDERPLUS_RUN.out.report,
+                "amrfinderplus",
+                "4.0.23",
+                "2021-05-01"
+                )
+            
             all_reports = all_reports.concat(hamronization_reports_amrfinder)
-           
+
             if(params.plots){
                 collective_table_amrfinder = HAMRONIZATION_SUMMARIZE_AMRFINDER(hamronization_reports_amrfinder.collect())
                 presence_absence_amrfinder = PA_2(collective_table_amrfinder[0], "amrfinder")
@@ -242,7 +233,7 @@ workflow{
         }
 
         if(params.run_deeparg){
-            assemblies_deeparg_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
+            //assemblies_deeparg_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
             run_output_deeparg = DEEPARG_RUN(assemblies_deeparg_ch)
             hamronization_reports_deeparg = HAMRONIZATION_DEEPARG_RUN(run_output_deeparg)
             all_reports = all_reports.concat(hamronization_reports_deeparg)
@@ -255,9 +246,18 @@ workflow{
         }
 
         if (params.run_fargene){
-            assemblies_fargene_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
-            run_output_fargene = FARGENE_RUN(assemblies_fargene_ch)
-            hamronization_reports_fargene = HAMRONIZATION_FARGENE_RUN(run_output_fargene)
+            //assemblies_fargene_ch = Channel.fromPath("${params.assembly_dir}/*.{fna,fa,fasta}")
+            FARGENE_RUN(
+                input_ch
+            )
+
+            hamronization_reports_fargene = HAMRONIZATION_FARGENE_RUN(
+                FARGENE_RUN.out.out,
+                "fargene",
+                "0.1",
+                "2021-05-01"
+            )
+
             all_reports = all_reports.concat(hamronization_reports_fargene)
 
             if(params.plots){
@@ -265,6 +265,19 @@ workflow{
                 presence_absence_fargene = PA_4(collective_table_fargene[0], "fargene")
                 H_4(presence_absence_fargene, 'fargene', collective_table_fargene[0])
             }
+        }
+
+        if (params.run_staramr){
+            STARAMR_SEARCH(
+                input_ch
+            )
+
+            HAMRONIZATION_STARAMR_SEARCH(
+                STARAMR_SEARCH.out.summary_tsv,
+                "staramr",
+                "0.1",
+                "2021-05-01"
+            )
         }
 
         all_reports = all_reports.collect()

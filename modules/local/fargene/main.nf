@@ -7,18 +7,27 @@ process FARGENE_RUN {
         'biocontainers/fargene:0.1--py27h21c881e_4' }"
 
     input:
-        file assembly
+        tuple val(meta), path(assembly)
         
     output:
-        tuple file("${assembly.baseName}/hmmsearchresults/${assembly.baseName}_${params.hmm_model}-hmmsearched.out"), val("fargene"), val("0.1"), val("2021-05-01")
+        tuple val(meta), file("${assembly.baseName}/hmmsearchresults/${assembly.baseName}_${params.hmm_model}-hmmsearched.out"), emit: out
+        path "versions.yml", emit: versions
 
     script:
+    def args = task.ext.args ?: ''
+    def VERSION = '0.1' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
         fargene \\
-            -p ${params.threads} \\
+            $args \\
+            -p $task.cpus \\
             -i $assembly \\
             --hmm-model ${params.hmm_model} \\
-            -o ${assembly.baseName}
+            -o ${assembly.baseName} \\
             --force
+
+        cat <<-END_VERSIONS > versions.yml
+        ${task.process}":
+            fargene: $VERSION
+        END_VERSIONS
     """
 }  

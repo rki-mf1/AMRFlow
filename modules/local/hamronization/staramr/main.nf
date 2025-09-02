@@ -1,0 +1,28 @@
+process HAMRONIZATION_STARAMR_SEARCH {
+    tag "fARGene"
+    publishDir "${params.output_dir}/02_hAMRonization/fargene/", mode: 'copy'
+    conda "bioconda::hamronization=1.1.9"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/hamronization:1.1.9--pyhdfd78af_0':
+        'biocontainers/hamronization:1.1.9--pyhdfd78af_0' }"
+        
+    input:
+        tuple val(meta), file(tool_output)
+        val(tool_name)
+        val(tool_version)
+        val(db_version)
+
+    output:
+        file("${tool_output.baseName}_staramr_standardized.tsv")
+        
+    script:
+    """
+    hamronize ${tool_name} \\
+        ${tool_output} \\
+        --input_file_name ${tool_output.baseName} \\
+        --format tsv \\
+        --output ${tool_output.baseName}_staramr_standardized.tsv \\
+        --analysis_software_version ${tool_version} \\
+        --reference_database_version ${db_version}
+    """ 
+}

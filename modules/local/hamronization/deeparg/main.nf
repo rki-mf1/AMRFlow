@@ -1,10 +1,10 @@
 process HAMRONIZATION_DEEPARG_RUN {
     tag "hAMRonization"
     publishDir "${params.output_dir}/02_hAMRonization/deeparg/", mode: 'copy'
-    conda "bioconda::hamronization=1.1.4"
+    conda "bioconda::hamronization=1.1.9"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/hamronization:1.1.4--pyhdfd78af_0':
-        'biocontainers/hamronization:1.1.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/hamronization:1.1.9--pyhdfd78af_0':
+        'biocontainers/hamronization:1.1.9--pyhdfd78af_0' }"
         
     input:
         tuple file(tool_output), val(tool_name), val(tool_version), val(db_version)

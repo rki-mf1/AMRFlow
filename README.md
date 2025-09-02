@@ -97,9 +97,27 @@ nextflow run rki-mf1/amrflow -r 0.0.1 --assembly_dir ./fastas --output_dir ./res
 
 ### Global Pipeline Parameters
 
-- `--assembly_dir <path>`: Path to a directory containing fasta files. Single fasta mode is not implemented yet.
+- `--input <path>`: Path to a samplesheet containing.
 - `--output_dir <path>`: Specifies the path where the output will be stored. Default is `/results`.
 - `--db_dir <path>`: Path to the databases directory needs to be set. It is mandatory to set the full path to the global database directory.
+
+#### Input samplesheet
+After database setup, prepare a samplesheet with your **input** data that looks as follows, with each row representing a sample via a genome assembly:
+`samplesheet.csv`:
+```
+sample,fasta,genus,species
+S1,/path/to/S1.fasta,Escherichia,coli
+S2,/path/to/S2.fasta,Acinetobacter,baumannii
+S3,/path/to/S2.fasta,Klebsiella,pneumoniae
+S4,/path/to/S2.fasta,Neisseria,meningitidis
+S5,/path/to/S2.fasta,Listeria,monocytogenes
+S6,/path/to/S2.fasta,Neisseria,gonorrhoeae
+S7,/path/to/S2.fasta,Salmonella,enterica
+S8,/path/to/S2.fasta,Salmonella,
+S9,/path/to/S2.fasta,,
+...
+```
+Genus and species information are optional and can be omitted if unknown. But it its recommended to include it if available since it can improve the AMR prediction if the species is supported by the incorporated tools.
 
 ### Tool Selection Parameters
 
